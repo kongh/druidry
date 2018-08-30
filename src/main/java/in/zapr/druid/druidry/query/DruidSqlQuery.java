@@ -1,6 +1,7 @@
 package in.zapr.druid.druidry.query;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 
@@ -12,4 +13,11 @@ public class DruidSqlQuery {
     protected String query;
 
     protected SqlContext context;
+
+    @Builder
+    public DruidSqlQuery(@NonNull String query,
+                         SqlContext context) {
+        this.query = query;
+        this.context = context;
+    }
 }
