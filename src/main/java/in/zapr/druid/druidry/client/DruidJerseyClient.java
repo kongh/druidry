@@ -1,13 +1,17 @@
 package in.zapr.druid.druidry.client;
 
+import in.zapr.druid.druidry.client.exception.ConnectionException;
+import in.zapr.druid.druidry.client.exception.QueryException;
+import in.zapr.druid.druidry.query.DruidQuery;
+import in.zapr.druid.druidry.query.DruidSqlQuery;
+import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.reflect.TypeUtils;
 import org.apache.http.conn.HttpClientConnectionManager;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.glassfish.jersey.apache.connector.ApacheClientProperties;
 import org.glassfish.jersey.apache.connector.ApacheConnectorProvider;
 import org.glassfish.jersey.client.ClientConfig;
-
-import java.util.List;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -16,12 +20,7 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-
-import in.zapr.druid.druidry.client.exception.ConnectionException;
-import in.zapr.druid.druidry.client.exception.QueryException;
-import in.zapr.druid.druidry.query.DruidQuery;
-import lombok.NonNull;
-import lombok.extern.slf4j.Slf4j;
+import java.util.List;
 
 @Slf4j
 public class DruidJerseyClient implements DruidClient {
@@ -84,6 +83,27 @@ public class DruidJerseyClient implements DruidClient {
     @Override
     public String query(DruidQuery druidQuery) throws QueryException {
 
+        try (Response response = this.queryWebTarget
+                .request(MediaType.APPLICATION_JSON)
+                .post(Entity.entity(druidQuery, MediaType.APPLICATION_JSON))) {
+
+            if (response.getStatus() == Response.Status.INTERNAL_SERVER_ERROR.getStatusCode()) {
+                handleInternalServerResponse(response);
+            }
+
+            return response.readEntity(String.class);
+
+        } catch (QueryException e) {
+            log.error("Exception while querying {}", e);
+            throw e;
+        } catch (Exception e) {
+            log.error("Exception while querying {}", e);
+            throw new QueryException(e);
+        }
+    }
+
+    @Override
+    public String sqlQuery(DruidSqlQuery druidQuery) throws QueryException {
         try (Response response = this.queryWebTarget
                 .request(MediaType.APPLICATION_JSON)
                 .post(Entity.entity(druidQuery, MediaType.APPLICATION_JSON))) {

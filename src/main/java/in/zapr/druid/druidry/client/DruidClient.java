@@ -5,6 +5,7 @@ import java.util.List;
 import in.zapr.druid.druidry.client.exception.ConnectionException;
 import in.zapr.druid.druidry.client.exception.QueryException;
 import in.zapr.druid.druidry.query.DruidQuery;
+import in.zapr.druid.druidry.query.DruidSqlQuery;
 
 public interface DruidClient {
 
@@ -29,6 +30,15 @@ public interface DruidClient {
      * @throws QueryException Error while querying
      */
     String query(DruidQuery druidQuery) throws QueryException;
+
+    /**
+     * Sql Queries druid
+     *
+     * @param druidQuery Druid Query object
+     * @return Result from Druid
+     * @throws QueryException Error while querying
+     */
+    String sqlQuery(DruidSqlQuery druidQuery) throws QueryException;
 
     /**
      * Queries druid
