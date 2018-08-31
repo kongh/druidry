@@ -32,6 +32,7 @@ public class DruidJerseyClient implements DruidClient {
     private ClientConfig jerseyConfig;
     private Client client;
     private WebTarget queryWebTarget;
+    private WebTarget sqlQueryWebTarget;
 
     public DruidJerseyClient(@NonNull DruidConfiguration druidConfiguration){
         this(druidConfiguration, null);
@@ -61,7 +62,7 @@ public class DruidJerseyClient implements DruidClient {
 
             this.client = ClientBuilder.newClient(this.jerseyConfig);
             this.queryWebTarget = this.client.target(this.druidUrl);
-
+            this.sqlQueryWebTarget = this.client.target(this.druidUrl + "/sql");
         } catch (Exception e) {
             throw new ConnectionException(e);
         }
@@ -104,7 +105,7 @@ public class DruidJerseyClient implements DruidClient {
 
     @Override
     public String sqlQuery(DruidSqlQuery druidQuery) throws QueryException {
-        try (Response response = this.queryWebTarget
+        try (Response response = this.sqlQueryWebTarget
                 .request(MediaType.APPLICATION_JSON)
                 .post(Entity.entity(druidQuery, MediaType.APPLICATION_JSON))) {
 
